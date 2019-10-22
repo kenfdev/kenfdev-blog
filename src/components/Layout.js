@@ -16,6 +16,10 @@ export default class Body extends React.Component {
                     <link rel="stylesheet" href={safePrefix('assets/css/main.css')}/>
                     <meta name="viewport" content="width=device-width, initialScale=1, userScalable=no" />
                     <meta name="google" content="notranslate" />
+                    {(_.get(this.props, 'pageContext.frontmatter.template') === 'post') &&  
+                    _.get(this.props, 'pageContext.frontmatter.canonical_url') && 
+                    <link rel="canonical" href={_.get(this.props, 'pageContext.frontmatter.canonical_url')}/>
+                    }
                 </Helmet>
                 <div className="wrapper">
                     <Header {...this.props} />
