@@ -11,5 +11,8 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.11",
     "astro": "^5.16.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }
