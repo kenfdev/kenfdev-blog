@@ -23,10 +23,22 @@ export function getLangFromUrl(url: URL): Lang {
 
 // idからslugを抽出する関数
 // 例: "hello-world.ja.md" → "hello-world"
+// 例: "event-modeling/index.ja.md" → "event-modeling"
 export function getSlugFromId(id: string): string {
-  // idの形式: "hello-world.ja.md"
+  // idの形式: "hello-world.ja.md" または "event-modeling/index.ja.md"
   // まず拡張子を除去
-  const withoutExt = id.replace(/\.md$/, '');
+  let withoutExt = id.replace(/\.md$/, '');
+
+  // ディレクトリ形式の場合: "event-modeling/index.ja" → "event-modeling"
+  if (withoutExt.includes('/')) {
+    const dirParts = withoutExt.split('/');
+    // index.ja の部分を除去してディレクトリ名をslugとして使用
+    if (dirParts[dirParts.length - 1].startsWith('index.')) {
+      return dirParts.slice(0, -1).join('/');
+    }
+  }
+
+  // フラットファイル形式: "hello-world.ja" → "hello-world"
   const parts = withoutExt.split('.');
   if (parts.length >= 2) {
     const langPart = parts[parts.length - 1];
