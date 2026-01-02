@@ -1,0 +1,58 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE_DESCRIPTION, SUPPORTED_LANGS, type Lang } from '@/lib/config';
+import { t, getPostsByLang, isValidLang } from '@/lib/i18n';
+
+export function getStaticPaths() {
+  return SUPPORTED_LANGS.map((lang) => ({
+    params: { lang },
+  }));
+}
+
+const { lang } = Astro.params;
+
+if (!isValidLang(lang)) {
+  return Astro.redirect('/ja/', 301);
+}
+
+const typedLang = lang as Lang;
+const posts = await getPostsByLang(typedLang);
+const recentPosts = posts.slice(0, 5);
+---
+
+<BaseLayout
+  title={t(typedLang, 'home')}
+  description={SITE_DESCRIPTION}
+  lang={typedLang}
+>
+  <h1 class="page-title">{t(typedLang, 'home')}</h1>
+
+  <section>
+    <h2>{t(typedLang, 'allPosts')}</h2>
+    {recentPosts.length > 0 ? (
+      <ul class="post-list">
+        {recentPosts.map((post) => (
+          <li class="post-item">
+            <h3>
+              <a href={`/${typedLang}/posts/${post.slug}/`}>
+                {post.data.title}
+              </a>
+            </h3>
+            <p class="post-meta">
+              {t(typedLang, 'postedOn')} {new Date(post.data.date).toLocaleDateString(typedLang === 'ja' ? 'ja-JP' : 'en-US')}
+            </p>
+            <p class="post-excerpt">{post.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No posts yet.</p>
+    )}
+
+    {posts.length > 5 && (
+      <p style="margin-top: 1rem;">
+        <a href={`/${typedLang}/posts/`}>{t(typedLang, 'posts')} &rarr;</a>
+      </p>
+    )}
+  </section>
+</BaseLayout>

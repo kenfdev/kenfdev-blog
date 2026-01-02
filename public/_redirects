@@ -1,0 +1,4 @@
+# Cloudflare Pages redirects
+/ /en/ 301
+/posts/* /en/posts/:splat 301
+/posts/ /en/posts/ 301

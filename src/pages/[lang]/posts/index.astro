@@ -1,0 +1,48 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SUPPORTED_LANGS, type Lang } from '@/lib/config';
+import { t, getPostsByLang, isValidLang } from '@/lib/i18n';
+
+export function getStaticPaths() {
+  return SUPPORTED_LANGS.map((lang) => ({
+    params: { lang },
+  }));
+}
+
+const { lang } = Astro.params;
+
+if (!isValidLang(lang)) {
+  return Astro.redirect('/ja/', 301);
+}
+
+const typedLang = lang as Lang;
+const posts = await getPostsByLang(typedLang);
+---
+
+<BaseLayout
+  title={t(typedLang, 'posts')}
+  description={t(typedLang, 'allPosts')}
+  lang={typedLang}
+>
+  <h1 class="page-title">{t(typedLang, 'allPosts')}</h1>
+
+  {posts.length > 0 ? (
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li class="post-item">
+          <h2>
+            <a href={`/${typedLang}/posts/${post.slug}/`}>
+              {post.data.title}
+            </a>
+          </h2>
+          <p class="post-meta">
+            {t(typedLang, 'postedOn')} {new Date(post.data.date).toLocaleDateString(typedLang === 'ja' ? 'ja-JP' : 'en-US')}
+          </p>
+          <p class="post-excerpt">{post.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p>No posts yet.</p>
+  )}
+</BaseLayout>

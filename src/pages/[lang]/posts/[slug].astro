@@ -1,0 +1,83 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import type { Lang } from '@/lib/config';
+import { t, getAlternateLangPost, getOtherLang, isValidLang, getSlugFromId } from '@/lib/i18n';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+
+  return posts.map((post) => {
+    const slug = getSlugFromId(post.id);
+    return {
+      params: {
+        lang: post.data.lang,
+        slug: slug,
+      },
+      props: { post, slug },
+    };
+  });
+}
+
+const { post, slug } = Astro.props;
+const { lang } = Astro.params;
+
+if (!isValidLang(lang)) {
+  return Astro.redirect('/ja/', 301);
+}
+
+const typedLang = lang as Lang;
+const { Content } = await post.render();
+
+// 別言語版が存在するかチェック
+const alternatePost = await getAlternateLangPost(slug, typedLang);
+const otherLang = getOtherLang(typedLang);
+const alternateUrl = alternatePost
+  ? `${Astro.site?.origin || ''}/${otherLang}/posts/${slug}/`
+  : undefined;
+
+const canonicalUrl = `${Astro.site?.origin || ''}/${typedLang}/posts/${slug}/`;
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  lang={typedLang}
+  canonical={canonicalUrl}
+  alternateUrl={alternateUrl}
+  alternateLang={alternatePost ? otherLang : undefined}
+  ogType="article"
+>
+  <article>
+    <header class="article-header">
+      <h1>{post.data.title}</h1>
+      <p class="article-meta">
+        {t(typedLang, 'postedOn')} {new Date(post.data.date).toLocaleDateString(typedLang === 'ja' ? 'ja-JP' : 'en-US')}
+      </p>
+      {post.data.tags.length > 0 && (
+        <div class="article-tags">
+          {t(typedLang, 'tags')}
+          {post.data.tags.map((tag: string) => (
+            <span>{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="article-content">
+      <Content />
+    </div>
+
+    <footer class="article-footer">
+      {alternatePost && (
+        <div class="lang-alternate">
+          {typedLang === 'ja' ? (
+            <span>This article is also available in <a href={alternateUrl}>English</a>.</span>
+          ) : (
+            <span>この記事は<a href={alternateUrl}>日本語</a>でも読めます。</span>
+          )}
+        </div>
+      )}
+    </footer>
+  </article>
+</BaseLayout>

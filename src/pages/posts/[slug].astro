@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import { getSlugFromId } from '@/lib/i18n';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const slugs = new Set(posts.map((post) => getSlugFromId(post.id)));
+
+  return Array.from(slugs).map((slug) => ({
+    params: { slug },
+  }));
+}
+
+const { slug } = Astro.params;
+return Astro.redirect(`/en/posts/${slug}/`, 301);
+---
