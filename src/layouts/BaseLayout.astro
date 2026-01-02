@@ -37,7 +37,12 @@ const otherLang = getOtherLang(lang);
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#1E88E5" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
@@ -70,7 +75,10 @@ const otherLang = getOtherLang(lang);
   <body>
     <header class="site-header">
       <div class="header-inner">
-        <a href={`/${lang}/`} class="site-title">{SITE_TITLE}</a>
+        <a href={`/${lang}/`} class="site-title">
+          <img src="/assets/logo.png" alt={SITE_TITLE} class="site-logo" />
+          <span>{SITE_TITLE}</span>
+        </a>
         <nav class="site-nav">
           <a href={`/${lang}/posts/`}>{t(lang, 'posts')}</a>
           <a href={`/${lang}/rss.xml`}>{t(lang, 'rss')}</a>
