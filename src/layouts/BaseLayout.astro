@@ -12,6 +12,7 @@ interface Props {
   alternateUrl?: string;
   alternateLang?: Lang;
   ogType?: 'website' | 'article';
+  ogImage?: string;
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   alternateUrl,
   alternateLang,
   ogType = 'website',
+  ogImage,
 } = Astro.props;
 
 const fullTitle = `${title} | ${SITE_TITLE}`;
@@ -55,6 +57,15 @@ const otherLang = getOtherLang(lang);
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content={ogType} />
     <meta property="og:locale" content={lang === 'ja' ? 'ja_JP' : 'en_US'} />
+    {ogImage && (
+      <>
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={ogImage} />
+      </>
+    )}
   </head>
   <body>
     <header class="site-header">

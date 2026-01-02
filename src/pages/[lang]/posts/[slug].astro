@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import type { Lang } from '@/lib/config';
 import { t, getAlternateLangPost, getOtherLang, isValidLang, getSlugFromId } from '@/lib/i18n';
@@ -37,6 +38,12 @@ const alternateUrl = alternatePost
   : undefined;
 
 const canonicalUrl = `${Astro.site?.origin || ''}/${typedLang}/posts/${slug}/`;
+const siteUrl = Astro.site?.origin || 'https://blog.kenev.net';
+
+// Use cover image for OGP if available, else use generated image
+const ogImage = post.data.cover
+  ? new URL(post.data.cover.src, Astro.site).href
+  : `${siteUrl}/og/${typedLang}/${slug}.png`;
 ---
 
 <BaseLayout
@@ -47,9 +54,18 @@ const canonicalUrl = `${Astro.site?.origin || ''}/${typedLang}/posts/${slug}/`;
   alternateUrl={alternateUrl}
   alternateLang={alternatePost ? otherLang : undefined}
   ogType="article"
+  ogImage={ogImage}
 >
   <article>
     <header class="article-header">
+      {post.data.cover && (
+        <Image
+          src={post.data.cover}
+          alt={post.data.coverAlt || post.data.title}
+          width={1200}
+          class="cover-image"
+        />
+      )}
       <h1>{post.data.title}</h1>
       <p class="article-meta">
         {t(typedLang, 'postedOn')} {new Date(post.data.date).toLocaleDateString(typedLang === 'ja' ? 'ja-JP' : 'en-US')}
