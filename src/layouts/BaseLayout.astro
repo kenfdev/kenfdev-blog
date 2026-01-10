@@ -13,6 +13,7 @@ interface Props {
   alternateLang?: Lang;
   ogType?: 'website' | 'article';
   ogImage?: string;
+  noindex?: boolean;
 }
 
 const {
@@ -24,12 +25,15 @@ const {
   alternateLang,
   ogType = 'website',
   ogImage,
+  noindex = false,
 } = Astro.props;
 
 const fullTitle = `${title} | ${SITE_TITLE}`;
 const siteUrl = Astro.site?.origin || '';
 const canonicalUrl = canonical || Astro.url.href;
 const otherLang = getOtherLang(lang);
+// For hreflang: always compute alternate URL for reciprocal links
+const alternateHref = alternateUrl || `${siteUrl}/${otherLang}/`;
 ---
 
 <!doctype html>
@@ -58,11 +62,12 @@ const otherLang = getOtherLang(lang);
     <meta name="theme-color" content="#1E88E5" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalUrl} />
 
-    <!-- hreflang -->
+    <!-- hreflang: always include both languages for reciprocal links -->
     <link rel="alternate" hreflang={lang} href={canonicalUrl} />
-    {alternateUrl && <link rel="alternate" hreflang={alternateLang} href={alternateUrl} />}
+    <link rel="alternate" hreflang={otherLang} href={alternateHref} />
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}/en/`} />
 
     <!-- RSS -->

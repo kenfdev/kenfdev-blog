@@ -10,5 +10,15 @@ export default defineConfig({
   build: {
     format: 'directory',
   },
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      filter: (page) => {
+        // Only include canonical URLs with language prefix (/en/ or /ja/)
+        // Exclude redirect pages (/, /posts/, /posts/*)
+        const url = new URL(page);
+        const path = url.pathname;
+        return path.startsWith('/en/') || path.startsWith('/ja/');
+      },
+    }),
+  ],
 });
