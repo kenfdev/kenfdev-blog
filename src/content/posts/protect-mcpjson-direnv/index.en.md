@@ -6,8 +6,6 @@ tags: ["direnv", "mcp", "security", "claude-code", "dotfiles"]
 lang: "en"
 ---
 
-# Secure .mcp.json Management with direnv — Keep Your API Keys Out of Git
-
 Are you hardcoding API keys directly in your `.mcp.json`? This article shows you how to use direnv to manage sensitive credentials safely.
 
 > **Target Environment**: This article assumes macOS + Zsh. For other environments, check the [official direnv documentation](https://direnv.net/).

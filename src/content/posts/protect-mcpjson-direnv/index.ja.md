@@ -6,8 +6,6 @@ tags: ["direnv", "mcp", "security", "claude-code", "dotfiles"]
 lang: "ja"
 ---
 
-# direnv で実現する安全な .mcp.json 管理 ― API キーをリポジトリに晒さないために
-
 `.mcp.json` に API キーを直接書いていませんか？この記事では、direnv を活用して機密情報を安全に管理する方法を紹介します。
 
 > **対象環境**: この記事では macOS + Zsh 環境を前提に説明します。他の環境については [direnv 公式ドキュメント](https://direnv.net/) を参照してください。
