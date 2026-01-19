@@ -14,6 +14,7 @@ interface Props {
   ogType?: 'website' | 'article';
   ogImage?: string;
   noindex?: boolean;
+  articleDate?: string;
 }
 
 const {
@@ -26,14 +27,13 @@ const {
   ogType = 'website',
   ogImage,
   noindex = false,
+  articleDate,
 } = Astro.props;
 
 const fullTitle = `${title} | ${SITE_TITLE}`;
 const siteUrl = Astro.site?.origin || '';
 const canonicalUrl = canonical || Astro.url.href;
 const otherLang = getOtherLang(lang);
-// For hreflang: always compute alternate URL for reciprocal links
-const alternateHref = alternateUrl || `${siteUrl}/${otherLang}/`;
 ---
 
 <!doctype html>
@@ -65,14 +65,13 @@ const alternateHref = alternateUrl || `${siteUrl}/${otherLang}/`;
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalUrl} />
 
-    <!-- hreflang: always include both languages for reciprocal links -->
+    <!-- hreflang: include alternate only when content exists -->
     <link rel="alternate" hreflang={lang} href={canonicalUrl} />
-    <link rel="alternate" hreflang={otherLang} href={alternateHref} />
+    {alternateUrl && <link rel="alternate" hreflang={otherLang} href={alternateUrl} />}
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}/en/`} />
 
     <!-- RSS -->
     <link rel="alternate" type="application/rss+xml" title={`RSS (${lang.toUpperCase()})`} href={`${siteUrl}/${lang}/rss.xml`} />
-    <link rel="alternate" type="application/rss+xml" title="RSS (All)" href={`${siteUrl}/rss.xml`} />
 
     <!-- OGP -->
     <meta property="og:title" content={fullTitle} />
@@ -88,6 +87,30 @@ const alternateHref = alternateUrl || `${siteUrl}/${otherLang}/`;
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content={ogImage} />
       </>
+    )}
+
+    <!-- JSON-LD Structured Data for Articles -->
+    {ogType === 'article' && articleDate && (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": title,
+        "description": description,
+        "url": canonicalUrl,
+        "inLanguage": lang === 'ja' ? 'ja-JP' : 'en-US',
+        "datePublished": articleDate,
+        "author": {
+          "@type": "Person",
+          "name": "Ken Fukuyama",
+          "url": "https://blog.kenev.net"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "kenev.net",
+          "url": "https://blog.kenev.net"
+        },
+        ...(ogImage && { "image": ogImage })
+      })} />
     )}
   </head>
   <body>

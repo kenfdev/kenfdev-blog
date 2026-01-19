@@ -19,6 +19,12 @@ export default defineConfig({
         const path = url.pathname;
         return path.startsWith('/en/') || path.startsWith('/ja/');
       },
+      serialize(item) {
+        return {
+          ...item,
+          lastmod: new Date().toISOString().split('T')[0],
+        };
+      },
     }),
   ],
 });

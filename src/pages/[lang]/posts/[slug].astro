@@ -24,7 +24,7 @@ const { post, slug } = Astro.props;
 const { lang } = Astro.params;
 
 if (!isValidLang(lang)) {
-  return Astro.redirect('/ja/', 301);
+  return Astro.redirect('/en/', 301);
 }
 
 const typedLang = lang as Lang;
@@ -55,6 +55,7 @@ const ogImage = post.data.cover
   alternateLang={alternatePost ? otherLang : undefined}
   ogType="article"
   ogImage={ogImage}
+  articleDate={new Date(post.data.date).toISOString()}
 >
   <article>
     <header class="article-header">
