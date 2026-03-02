@@ -6,6 +6,8 @@ tags: ["cloudflare-workers", "postgresql", "pg-pool", "serverless", "hono", "deb
 lang: "en"
 ---
 
+# Why pg.Pool Hangs on Cloudflare Workers (and How to Fix It)
+
 I run Hono + Emmett + Pongo on Cloudflare Workers. After deploying, sign-up worked perfectly. Then the very next request — a magic link callback, minutes later — hung every time. The Workers runtime killed it with:
 
 > *"The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response."*
@@ -86,6 +88,51 @@ Key details:
 
 After deploying this change, the magic link callback and all subsequent requests worked without hanging.
 
+## Update: A Better Approach (from the Emmett maintainer)
+
+After publishing this article, Oskar Dudycz (Emmett's maintainer) pointed out that there's a cleaner approach. It is to share a single pool explicitly and close each consumer individually:
+
+```typescript
+import { getPool, endPool } from '@event-driven-io/dumbo'
+
+export function dependencies() {
+  return createMiddleware(async (c, next) => {
+    const dbUrl = requireEnv(c, 'DATABASE_URL')
+
+    // pass the same pool to eventStore, Pongo, and anything else
+    const pool = getPool({
+      connectionString: dbUrl,
+      connectionTimeoutMillis: 10000,
+    })
+
+    const eventStore = getPostgreSQLEventStore(dbUrl, {
+      connectionOptions: { pool },
+      projections: [/* ... */],
+    })
+
+    const pongoDb = pongoClient(dbUrl, {
+      connectionOptions: { pool },
+      schema: { autoMigration: 'None' },
+    }).db()
+
+    c.set('eventStore', eventStore)
+    c.set('pongoDb', pongoDb)
+    c.set('pgPool', pool)
+
+    try {
+      await next()
+    } finally {
+      await eventStore.close()
+      await pongoDb.close()
+      await endPool(dbUrl, pool)
+    }
+  })
+}
+```
+
+By passing the pool explicitly, you know for certain that everything shares the same connection — no hidden pool cache to worry about. `endPool()` closes just that one pool instead of wiping the entire cache.
+
 ## A Note on Other Serverless Platforms
 
 This article focuses on Cloudflare Workers, but the underlying issue — stale TCP connections surviving across invocations — can appear on other serverless platforms too. AWS Lambda, for instance, freezes execution contexts between invocations in a similar way. The specifics differ (Lambda's freeze duration, timeout behavior, and connection handling are different from Workers), but the principle is the same: if your platform freezes state between requests, you need to account for stale connections. The pattern of cleaning up pools after each request is worth considering wherever isolate or context reuse is in play.
+
